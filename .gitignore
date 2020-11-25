@@ -1,0 +1,6 @@
+*.class
+*.log
+.terraform/
+.idea/
+target/
+archive/
