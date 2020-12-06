@@ -8,17 +8,18 @@ import scala.util.Try
 
 class MovieProcessor {
 
-  def processMovies(movieList: Iterator[String])= Future(
-    movieList.map(line => {
-      matchLine(line).map(movieDetails => {
-        Movie(movieDetails(0), movieDetails(1), Try(movieDetails(3).toInt).toOption, movieDetails(9), movieDetails(5).split(",").toList)
-      })
+  def processMovies(movieList: Iterator[String]) = Future(
+    movieList.flatMap(line => {
+      for {
+        movieDetails <- matchLine(line)
+        maybeFilm <- Try(Movie(movieDetails(0), movieDetails(2), movieDetails(7).toInt, movieDetails(3), movieDetails(10).split(",").toList, movieDetails(1))).toOption
+      } yield maybeFilm
     }
     )
   )
 
   def matchLine(line: String) = line match {
-    case "imdb_title_id,title,original_title,year,date_published,genre,duration,country,language,director,writer,production_company,actors,description,avg_vote,votes,budget,usa_gross_income,worlwide_gross_income,metascore,reviews_from_users,reviews_from_critics"
+    case "show_id,type,title,director,cast,country,date_added,release_year,rating,duration,listed_in,description"
     => None
     case s@_ if (s.length > 0) => Some(s.split(",(?=([^\\\"]*\\\"[^\\\"]*\\\")*[^\\\"]*$)"))
     case _ => None
@@ -30,5 +31,5 @@ class MovieProcessor {
 
 object MovieProcessor {
 
-  def apply = new MovieProcessor()
+  def apply() = new MovieProcessor()
 }
